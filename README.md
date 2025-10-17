@@ -14,6 +14,7 @@ Repository that covers python opencv based image processing approach that we can
 10. Tolerence value 200 for Image_90.jpg
 11. Tolerence value 100 for Test_Image_1.jpg
 12. Tolerence value 25 for Test_Image_2.png
+13. Tolerence value 43 for Test_Image_3.png
 
 ## Limitations:
 This technique will only work when the building image is captured from the front of the image. For images that are captured side ways are not suitable for this opencv based algorithm. 
