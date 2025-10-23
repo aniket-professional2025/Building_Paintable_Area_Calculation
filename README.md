@@ -1,4 +1,4 @@
-# Floor_Number_Estimation
+# Measure Paintable Area on Building Surface
 Repository that covers python opencv based image processing approach that we can use for floor detection from building images. It is subjective to  how a picture is taken. In general for most of the images, it can be done by changing the tolerence parameter
 
 ## The Different Values for Different Images
@@ -16,5 +16,8 @@ Repository that covers python opencv based image processing approach that we can
 12. Tolerence value 25 for Test_Image_2.png
 13. Tolerence value 43 for Test_Image_3.png
 
+## Process
+To solve this issue, we can use both python (Open CV) and open source Object Detection Model (GroundingDino from HF) to detect the building and home, house on a picture. We can get the bounding box and its respective height and width in pixel. Then we can use a real life know height as scale factor to calculate the width and area of the building
+
 ## Limitations:
-This technique will only work when the building image is captured from the front of the image. For images that are captured side ways are not suitable for this opencv based algorithm. 
+This technique will only work when the building image is captured from the front of the image. For images that are captured side ways are not suitable for this opencv based algorithm.
