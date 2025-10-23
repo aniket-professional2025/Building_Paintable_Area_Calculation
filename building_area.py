@@ -72,16 +72,16 @@ def building_information(image_path: str, detection_threshold: float, real_build
 
     # Calculate the Actual Height and Actual Width
     height_ft = real_building_height
-    width_ft = np.round(scale_factor * width_px, 0)
+    width_ft = scale_factor * width_px
 
     # Calculate the Area of the building in feet
-    area_ft = np.round(height_ft * width_ft, 0)
+    area_ft = height_ft * width_ft
 
     # Putting Text on the Image
     image_np = np.array(image)
     cv2.putText(image_np, f"Height : {height_ft} Ft", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(image_np, f"Width : {width_ft} Ft", (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(image_np, f"Area : {area_ft} Sq. Ft", (10, 120),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.putText(image_np, f"Width : {np.round(width_ft, 2)} Ft", (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.putText(image_np, f"Area : {np.round(area_ft, 2)} Sq. Ft", (10, 120),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
 
     # Printing the results
     print("The bounding Box Coordinates are:", result['boxes'].tolist()[0])
@@ -99,12 +99,12 @@ def building_information(image_path: str, detection_threshold: float, real_build
         print(f"The Annotated Image is Saved in: {output_path}")
 
     # Showing the Image
-    image.show()
+    # image.show()
 
     # Return the required building information
-    return height_ft, width_ft, area_ft
+    return height_ft, np.round(width_ft, 2) , np.round(area_ft, 2)
 
 # # Inference
-# image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_46.jpg"
-# output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_46_Result.jpg"
-# building_information(image_path, detection_threshold = 0.4, real_building_height = 25, output_path = output_path)
+# image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_21.jpg"
+# output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_21_Building_Area.jpg"
+# building_information(image_path, detection_threshold = 0.4, real_building_height = 23, output_path = output_path)

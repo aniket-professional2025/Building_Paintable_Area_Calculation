@@ -81,9 +81,9 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
             print(f"[INFO] Scale factor for {label_text}: {scale_factor:.5f} ft/pixel")
 
         scale_factor = scale_factors[label_text]
-        width_ft = np.round(width_px * scale_factor, 0)
-        height_ft = np.round(height_px * scale_factor, 0)
-        area_ft = np.round(width_ft * height_ft, 0)
+        width_ft = width_px * scale_factor
+        height_ft = height_px * scale_factor
+        area_ft = width_ft * height_ft
 
         object_areas[label_text] += area_ft
         total_area_all += area_ft
@@ -114,32 +114,34 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
     cv2.putText(image_np, f"Total Area: {total_area_all:.2f} sq.ft",
                 (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
 
-    image = Image.fromarray(image_np)
-
     # --- Save & Display ---
     if output_path:
-        image.save(output_path)
+        cv2.imwrite(output_path, image_np) 
         print(f"Image with detections saved to: {output_path}")
 
-    image.show()
+    # Convert the Numpy Image 
+    image = Image.fromarray(image_np)
+
+    # Showing the Image
+    # image.show()
 
     # Creating the Json for storing the Final result
     result_json =  {**object_areas, "total_area": total_area_all}
 
     # Accessing the area of each object
-    window_area = result_json['windows']
-    door_area = result_json['doors']
-    total_area = result_json['total_area']
+    window_area = np.round(result_json['windows'], 2)
+    door_area = np.round(result_json['doors'], 2)
+    total_area = np.round(result_json['total_area'],2)
 
     # Returning the areas
     return window_area, door_area, total_area
 
 # # Inference on the Modified Function
 # if __name__ == "__main__":
-#     image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_3.jpg"
-#     output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Initial_Results\Image_3_Modified_Objects_Area.jpg"
+#     image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_21.jpg"
+#     output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_21_Objects_Area.jpg"
 
-#     window, door, total = detect_objects(image_path = image_path, real_height_window_feet = 3.5, real_height_door_feet = 7.0, threshold = 0.3, output_path = output_path)
+#     window, door, total = detect_objects(image_path = image_path, real_height_window_feet = 3.5, real_height_door_feet = 7.0, threshold = 0.31, output_path = output_path)
 
 #     print("Window Area:", window)
 #     print("Door Area:", door)

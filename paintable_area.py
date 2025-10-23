@@ -2,6 +2,7 @@
 from objects_area import detect_objects
 from building_area import building_information
 import cv2
+import numpy as np
 
 # Define the function to get the complete results
 def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, threshold: float = 0.4, real_building_height: float = 40.0, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, output_path = None):
@@ -15,7 +16,7 @@ def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, th
     print(f"Window Area is: {window_area} Sq.Feet, Door Area is: {door_area} Sq.Feet, Total Area is: {object_area} Sq.Feet")
 
     # Calculate Total Paintable Area
-    paintable_area = area_ft - object_area
+    paintable_area = np.round((area_ft - object_area), 2)
 
     # Annotate and Save Final Image
     print("\nAnnotating and Saving Final Image")
@@ -29,7 +30,7 @@ def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, th
     # Define Annotation Settings
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.7
-    color = (0, 0, 255) # Blue color for text
+    color = (0, 0, 255) # Red color for text
     thickness = 2
     
     # Text to be written on the image
@@ -64,9 +65,9 @@ def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, th
 
 # Inference on the Function
 if __name__ == "__main__":
-    image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_3.jpg"
-    output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_3_Final_Result.jpg"
-    height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area = measure_paintable_area(image_path = image_path, detection_threshold = 0.3, threshold = 0.3, real_building_height = 25, real_height_window_feet = 3.5, real_height_door_feet = 7, output_path = output_path)
+    image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_21.jpg"
+    output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_21_Final_Result.jpg"
+    height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area = measure_paintable_area(image_path = image_path, detection_threshold = 0.4, threshold = 0.31, real_building_height = 23, real_height_window_feet = 3.5, real_height_door_feet = 7, output_path = output_path)
 
     print(f"The Actual Height is: {height_ft} Feet")
     print(f"The Actual Width is: {width_ft} Feet")
