@@ -17,7 +17,8 @@ Repository that covers python opencv based image processing approach that we can
 13. Tolerence value 43 for Test_Image_3.png
 
 ## Process
-To solve this issue, we can use both python (Open CV) and open source Object Detection Model (GroundingDino from HF) to detect the building and home, house on a picture. We can get the bounding box and its respective height and width in pixel. Then we can use a real life know height as scale factor to calculate the width and area of the building
+To solve this issue, we can use both python (Open CV) and open source Object Detection Model (GroundingDino from HF) to detect the building and home, house on a picture. We can get the bounding box and its respective height and width in pixel. Then we can use a real life know height as scale factor to calculate the width and area of the building <br>
+For the Zero-shot Object Detection based approach that uses the Hugging Face GroundingDino Model (<https://huggingface.co/openmmlab-community/mm_grounding_dino_large_all>), we can detect the required objects by changing the detection_threshold. By default it is set as 0.40. 
 
 ## Limitations:
 This technique will only work when the building image is captured from the front of the image. For images that are captured side ways are not suitable for this opencv based algorithm.
