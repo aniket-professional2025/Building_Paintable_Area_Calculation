@@ -1,51 +1,24 @@
 # Importing Required Packages
 from objects_area import detect_objects
-from total_building_area import building_information 
-import numpy as np
+from building_area import building_information
 import cv2
-import torch
-from PIL import Image
 
-# Define the main function to calculate the paintable area
-def paintable_area(image_path: str, floor_tolerence: int = 130, actual_floor_height_feet: float = 10.0, real_object_height_feet: float = 3.5,  detection_threshold: float = 0.5, output_path: str = None):
+# Define the function to get the complete results
+def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, threshold: float = 0.4, real_building_height: float = 40.0, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, output_path = None):
 
-    """
-    Calculates the total building area, object (window) area, and the final 
-    paintable area (Building Area - Object Area) for a given image.
+    # The Function to Fetch the Building Information
+    height_ft, width_ft, area_ft = building_information(image_path = image_path, detection_threshold = detection_threshold, real_building_height = real_building_height)
+    print(f"The Height of the Building is {height_ft} Feet, The Width is {width_ft} Feet and Area is {area_ft} Square Feet")
 
-    Args:
-        image_path (str): Path to the input image.
-        floor_tolerence (int): Tolerance for clustering horizontal lines into floors.
-        actual_floor_height (float): Actual height of one floor in feet.
-        real_object_height_feet (float): Known real-world height of a reference object (e.g., a window) in feet, used for scaling.
-        detection_threshold (float): Confidence threshold for object detection.
-        output_path (str): Path to save the final annotated image.
-        
-    Returns:
-        tuple: (num_floors, real_height, real_width, total_building_area, total_object_area, paintable_area)
-    """
+    # The function to Fetch the Area of Objects (Widnows and Doors)
+    window_area, door_area, object_area = detect_objects(image_path = image_path, real_height_window_feet = real_height_window_feet, real_height_door_feet = real_height_door_feet, threshold = threshold)
+    print(f"Window Area is: {window_area} Sq.Feet, Door Area is: {door_area} Sq.Feet, Total Area is: {object_area} Sq.Feet")
 
-    # --- 1. Calculate Building Information ---
-    print("\n--- 1. Calculating Building Information ---")
-    
-    num_floors, real_height, real_width, total_building_area = building_information(image_path = image_path, tolerence = floor_tolerence, actual_floor_height = actual_floor_height_feet, output_path = None)
+    # Calculate Total Paintable Area
+    paintable_area = area_ft - object_area
 
-    print(f"Building Information: Floors = {num_floors}, Height = {real_height:.0f} ft, Width = {real_width:.0f} ft, Area = {total_building_area:.0f} sq. ft")
-    
-    # --- 2. Calculate Object (Window) Area ---
-    print("\n--- 2. Calculating Object (Window) Area ---")
-    
-    total_object_area = detect_objects(image_path = image_path, real_height_feet = real_object_height_feet, threshold = detection_threshold, output_path = None)
-    total_object_area = float(total_object_area)
-    print(f"Total Object Area (Windows): {total_object_area:.0f} sq. feet")
-
-    # --- 3. Calculate Paintable Area ---
-    paintable_area_val = total_building_area - total_object_area
-    paintable_area_val = np.round(paintable_area_val, 0)
-    print(f"\n[FINAL RESULT] Paintable Area: {paintable_area_val:.0f} sq. feet")
-
-    # --- 4. Annotate and Save Final Image ---
-    print("\n--- 4. Annotating and Saving Final Image ---")
+    # Annotate and Save Final Image
+    print("\nAnnotating and Saving Final Image")
     try:
         img_np = cv2.imread(image_path)
         if img_np is None:
@@ -56,17 +29,18 @@ def paintable_area(image_path: str, floor_tolerence: int = 130, actual_floor_hei
     # Define Annotation Settings
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.7
-    color = (255, 0, 0) # Blue color for text
+    color = (0, 0, 255) # Blue color for text
     thickness = 2
     
     # Text to be written on the image
     text_lines = [
-        f"Estimated Floors: {num_floors}",
-        f"Estimated Height: {np.round(real_height, 0):.0f} Feets",
-        f"Estimated Width: {np.round(real_width, 0):.0f} Feets",
-        f"Total Building Area: {np.round(total_building_area, 0):.0f} Sq. Feet",
-        f"Total Window Area: {np.round(total_object_area, 0):.0f} Sq. Feet",
-        f"Paintable Area: {np.round(paintable_area_val, 0):.0f} Sq. Feet"
+        f"Estimated Height: {height_ft} Feets",
+        f"Estimated Width: {width_ft} Feets",
+        f"Total Building Area: {area_ft} Sq. Feet",
+        f"Total Window Area: {window_area} Sq. Feet",
+        f"Total Door Area: {door_area} Sq. Feet",
+        f"Total Objects Area: {object_area} Sq. Feet",
+        f"Paintable Area: {paintable_area} Sq. Feet"
     ]
     
     # Put text on image (defining the Coordinates)
@@ -85,39 +59,19 @@ def paintable_area(image_path: str, floor_tolerence: int = 130, actual_floor_hei
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # --- 5. Return Results ---
-    return (
-        num_floors, 
-        np.round(real_height, 0), 
-        np.round(real_width, 0), 
-        total_building_area, 
-        total_object_area, 
-        paintable_area_val
-    )
+    # Return Results
+    return height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area
 
-# Inference Example
+# Inference on the Function
 if __name__ == "__main__":
+    image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_3.jpg"
+    output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_3_Final_Result.jpg"
+    height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area = measure_paintable_area(image_path = image_path, detection_threshold = 0.3, threshold = 0.3, real_building_height = 25, real_height_window_feet = 3.5, real_height_door_feet = 7, output_path = output_path)
 
-    image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\images\Image_8.jpg"
-    output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\images\Image_8_Final_Result.jpg"
-
-    print("\nStarting Paintable Area Calculation...")
-    
-    results = paintable_area(
-        image_path = image_path, 
-        floor_tolerence = 130, 
-        actual_floor_height_feet = 10.0,
-        real_object_height_feet = 3.5, 
-        detection_threshold = 0.5,
-        output_path = output_path
-    )
-    
-    num_floors, height, width, building_area, object_area, final_paintable_area = results
-    
-    print("\n--- Function Return Values ---")
-    print(f"Number of Floors: {num_floors}")
-    print(f"Building Height: {height:.2f} Feets")
-    print(f"Building Width: {width:.2f} Feets")
-    print(f"Total Building Area: {building_area:.2f} Sq. Feet")
-    print(f"Total Object Area (Windows): {object_area:.2f} Sq. Feet")
-    print(f"Final Paintable Area: {final_paintable_area:.2f} Sq. Feet")
+    print(f"The Actual Height is: {height_ft} Feet")
+    print(f"The Actual Width is: {width_ft} Feet")
+    print(f"The Total Building Area is: {area_ft} Sq. Feet")
+    print(f"Total Windows Area is: {window_area}")
+    print(f"Total Doors Area is: {door_area}")
+    print(f"Total Objects Area is: {object_area}")
+    print(f"Total Paintable Area is: {paintable_area}")
