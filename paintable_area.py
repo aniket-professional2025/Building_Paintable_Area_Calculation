@@ -5,14 +5,14 @@ import cv2
 import numpy as np
 
 # Define the function to get the complete results
-def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, threshold: float = 0.4, real_building_height: float = 40.0, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, output_path = None):
+def measure_paintable_area(image_path: str, building_threshold: float = 0.4, object_threshold: float = 0.4, real_pipe_height: float = 20, real_building_height: float = 40.0, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, output_path = None):
 
     # The Function to Fetch the Building Information
-    height_ft, width_ft, area_ft = building_information(image_path = image_path, detection_threshold = detection_threshold, real_building_height = real_building_height)
+    height_ft, width_ft, area_ft = building_information(image_path = image_path, detection_threshold = building_threshold, real_building_height = real_building_height)
     print(f"The Height of the Building is {height_ft} Feet, The Width is {width_ft} Feet and Area is {area_ft} Square Feet")
 
     # The function to Fetch the Area of Objects (Widnows and Doors)
-    window_area, door_area, object_area = detect_objects(image_path = image_path, real_height_window_feet = real_height_window_feet, real_height_door_feet = real_height_door_feet, threshold = threshold)
+    window_area, door_area, pipe_area, object_area = detect_objects(image_path = image_path, real_height_pipes_feet = real_pipe_height, real_height_window_feet = real_height_window_feet, real_height_door_feet = real_height_door_feet, threshold = object_threshold)
     print(f"Window Area is: {window_area} Sq.Feet, Door Area is: {door_area} Sq.Feet, Total Area is: {object_area} Sq.Feet")
 
     # Calculate Total Paintable Area
@@ -40,6 +40,7 @@ def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, th
         f"Total Building Area: {area_ft} Sq. Feet",
         f"Total Window Area: {window_area} Sq. Feet",
         f"Total Door Area: {door_area} Sq. Feet",
+        f"Total Pipe Area: {pipe_area} Sq. Feet", 
         f"Total Objects Area: {object_area} Sq. Feet",
         f"Paintable Area: {paintable_area} Sq. Feet"
     ]
@@ -61,13 +62,13 @@ def measure_paintable_area(image_path: str, detection_threshold: float = 0.4, th
     cv2.destroyAllWindows()
 
     # Return Results
-    return height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area
+    return height_ft, width_ft, area_ft, window_area, door_area, pipe_area, object_area, paintable_area
 
 # Inference on the Function
 if __name__ == "__main__":
     image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_21.jpg"
     output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_21_Final_Result.jpg"
-    height_ft, width_ft, area_ft, window_area, door_area, object_area, paintable_area = measure_paintable_area(image_path = image_path, detection_threshold = 0.4, threshold = 0.31, real_building_height = 23, real_height_window_feet = 3.5, real_height_door_feet = 7, output_path = output_path)
+    height_ft, width_ft, area_ft, window_area, door_area, pipe_area, object_area, paintable_area = measure_paintable_area(image_path = image_path, building_threshold = 0.4, object_threshold = 0.31, real_pipe_height = 20, real_building_height = 23, real_height_window_feet = 3.5, real_height_door_feet = 7, output_path = output_path)
 
     print(f"The Actual Height is: {height_ft} Feet")
     print(f"The Actual Width is: {width_ft} Feet")
