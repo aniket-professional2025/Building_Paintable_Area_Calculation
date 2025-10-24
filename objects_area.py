@@ -68,15 +68,13 @@ def detect_objects(image_path: str, real_height_pipes_feet: float = 20, real_hei
         # Convert or clean label
         if isinstance(label_id, str):
             label_text = label_id.strip().lower()
-        elif isinstance(label_id, int) and label_id < len(text_labels[0]):
+        elif isinstance(label_id, int) and  0 <= label_id < len(text_labels[0]):
             label_text = text_labels[0][label_id].lower()
         else:
-            print(f"[WARNING] Skipping detection {i} due to invalid label: {label_id}")
-            continue  # Skip empty or unknown labels
+            label_text = ""
 
         # Skip if label not one of expected
-        if label_text not in object_areas:
-            print(f"[WARNING] Skipping unexpected label: {label_text}")
+        if not label_text or label_text not in object_areas:
             continue
 
         confidence = float(score.item())
@@ -105,7 +103,7 @@ def detect_objects(image_path: str, real_height_pipes_feet: float = 20, real_hei
         print(f"{label_text.capitalize()} {i}: {width_ft:.2f} ft x {height_ft:.2f} ft = {area_ft:.2f} sq.ft")
 
         # Draw bounding boxes and labels
-        color = (255, 0, 0) if label_text == "windows" else (0, 0, 255)
+        # color = (255, 0, 0) if label_text == "windows" else (0, 0, 255)
         outline_color = "red" if label_text == "windows" else ("blue" if label_text == "doors" else "green")
         draw.rectangle(box, outline = outline_color, width = 3)
         text_position = (x_min, y_min - 25 if y_min > 25 else y_min + 5)
@@ -160,7 +158,7 @@ if __name__ == "__main__":
 
     window, door, pipe, total = detect_objects(image_path = image_path, real_height_pipes_feet = 20, real_height_window_feet = 3.5, real_height_door_feet = 7.0, threshold = 0.1, output_path = output_path)
 
-    print("Window Area:", window)
-    print("Door Area:", door)
-    print("Pipe Area:", pipe)
-    print("Total Area:", total)
+    # print("Window Area:", window)
+    # print("Door Area:", door)
+    # print("Pipe Area:", pipe)
+    # print("Total Area:", total)
