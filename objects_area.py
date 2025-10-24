@@ -22,7 +22,7 @@ model = AutoModelForZeroShotObjectDetection.from_pretrained(model_id).to(device)
 print("[DEBUG] The Model is Loaded Successfully")
 
 # Define Function to get different detections
-def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, threshold: float = 0.4, output_path = None):
+def detect_objects(image_path: str, real_height_pipes_feet: float = 20, real_height_window_feet: float = 3.5, real_height_door_feet: float = 7.0, threshold: float = 0.4, output_path = None):
 
     # --- Load Image ---
     try:
@@ -32,7 +32,7 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
         raise FileNotFoundError("No Image found at:", image_path)
 
     # --- Prepare Labels ---
-    text_labels = [["windows", "doors"]]
+    text_labels = [["windows", "doors", "pipes"]]
     print("[DEBUG] Using text labels:", text_labels)
 
     # --- Model Input ---
@@ -57,14 +57,28 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
 
     # --- Initialize Accumulators ---
     total_area_all = 0.0
-    object_areas = {"windows": 0.0, "doors": 0.0}
-    scale_factors = {"windows": None, "doors": None}
-    real_heights = {"windows": real_height_window_feet, "doors": real_height_door_feet}
+    object_areas = {"windows": 0.0, "doors": 0.0, "pipes": 0.0}
+    scale_factors = {"windows": None, "doors": None, "pipes": None}
+    real_heights = {"windows": real_height_window_feet, "doors": real_height_door_feet, "pipes": real_height_pipes_feet}
 
     # --- Process Each Detection ---
     for i, (box, score, label_id) in enumerate(zip(results["boxes"], results["scores"], results["labels"]), 1):
         box = [float(x) for x in box.tolist()]
-        label_text = label_id if isinstance(label_id, str) else text_labels[0][label_id] # text_labels[0][label_id] or label_text = label_id
+        
+        # Convert or clean label
+        if isinstance(label_id, str):
+            label_text = label_id.strip().lower()
+        elif isinstance(label_id, int) and label_id < len(text_labels[0]):
+            label_text = text_labels[0][label_id].lower()
+        else:
+            print(f"[WARNING] Skipping detection {i} due to invalid label: {label_id}")
+            continue  # Skip empty or unknown labels
+
+        # Skip if label not one of expected
+        if label_text not in object_areas:
+            print(f"[WARNING] Skipping unexpected label: {label_text}")
+            continue
+
         confidence = float(score.item())
 
         print(f"\nDetected {label_text} with confidence {confidence:.2f} at {box}")
@@ -92,7 +106,8 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
 
         # Draw bounding boxes and labels
         color = (255, 0, 0) if label_text == "windows" else (0, 0, 255)
-        draw.rectangle(box, outline="red" if label_text == "windows" else "blue", width=3)
+        outline_color = "red" if label_text == "windows" else ("blue" if label_text == "doors" else "green")
+        draw.rectangle(box, outline = outline_color, width = 3)
         text_position = (x_min, y_min - 25 if y_min > 25 else y_min + 5)
         draw.text(text_position, f"{label_text} {confidence:.2f}",
                   fill="red" if label_text == "windows" else "blue")
@@ -123,7 +138,7 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
     image = Image.fromarray(image_np)
 
     # Showing the Image
-    # image.show()
+    image.show()
 
     # Creating the Json for storing the Final result
     result_json =  {**object_areas, "total_area": total_area_all}
@@ -131,18 +146,20 @@ def detect_objects(image_path: str, real_height_window_feet: float = 3.5, real_h
     # Accessing the area of each object
     window_area = np.round(result_json['windows'], 2)
     door_area = np.round(result_json['doors'], 2)
+    pipe_area = np.round(result_json['pipes'], 2)
     total_area = np.round(result_json['total_area'],2)
 
     # Returning the areas
-    return window_area, door_area, total_area
+    return window_area, door_area, pipe_area, total_area
 
-# # Inference on the Modified Function
-# if __name__ == "__main__":
-#     image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\Image_21.jpg"
-#     output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\Image_21_Objects_Area.jpg"
+# Inference on the Modified Function
+if __name__ == "__main__":
+    image_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\OrgImages\PipeTestImage.png"
+    output_path = r"C:\Users\Webbies\Jupyter_Notebooks\Berger_Building_Height_Width\Images\Modify\PipeTestImage_Objects_Area.jpg"
 
-#     window, door, total = detect_objects(image_path = image_path, real_height_window_feet = 3.5, real_height_door_feet = 7.0, threshold = 0.31, output_path = output_path)
+    window, door, pipe, total = detect_objects(image_path = image_path, real_height_pipes_feet = 20, real_height_window_feet = 3.5, real_height_door_feet = 7.0, threshold = 0.1, output_path = output_path)
 
-#     print("Window Area:", window)
-#     print("Door Area:", door)
-#     print("Total Area:", total)
+    print("Window Area:", window)
+    print("Door Area:", door)
+    print("Pipe Area:", pipe)
+    print("Total Area:", total)
