@@ -64,7 +64,7 @@ def detect_objects(image_path: str, real_height_pipes_feet: float = 20, real_hei
     # --- Process Each Detection ---
     for i, (box, score, label_id) in enumerate(zip(results["boxes"], results["scores"], results["labels"]), 1):
         box = [float(x) for x in box.tolist()]
-        
+
         # Convert or clean label
         if isinstance(label_id, str):
             label_text = label_id.strip().lower()
@@ -131,7 +131,8 @@ def detect_objects(image_path: str, real_height_pipes_feet: float = 20, real_hei
 
     # --- Save & Display ---
     if output_path:
-        cv2.imwrite(output_path, image_np) 
+        image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(output_path, image_bgr) 
         print(f"Image with detections saved to: {output_path}")
 
     # Convert the Numpy Image 
